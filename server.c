@@ -1,6 +1,5 @@
 /*original code from:
 https://www.geeksforgeeks.org/tcp-server-client-implementation-in-c/
-modified to run on uxb4.wiu.edu
 */
 #include <string.h>
 #include <errno.h>
