@@ -1,101 +1,109 @@
-/*original code from:
-https://www.geeksforgeeks.org/tcp-server-client-implementation-in-c/
-*/
-#include <string.h>
-#include <errno.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <netdb.h> 
-#include <netinet/in.h> 
+// Server side implementation of UDP client-server model
 #include <stdio.h>
-#include <stdlib.h> 
-#include <string.h> 
-#include <sys/socket.h> 
-#include <sys/types.h> 
-#define MAX 80 
-#define PORT 8080 
-  
-// Function designed for chat between client and server. 
-void func(int sockfd) 
-{ 
-    char buff[MAX]; 
-    // infinite loop for chat 
-    for (;;) { 
-        bzero(buff, MAX); 
-  
-        // read the message from client and copy it in buffer 
-        read(sockfd, buff, sizeof(buff)); 
-        // print buffer which contains the client contents 
-        printf("From client: %s\t To client : ", buff); 
-        bzero(buff, MAX); 
-        // copy server message in the buffer 
-     	fgets(buff,MAX,stdin);
- 
-        // and send that buffer to client 
-        write(sockfd, buff, sizeof(buff)); 
-  
-        // if msg contains "Exit" then server exit and chat ended. 
-        if (strncmp("exit", buff, 4) == 0) { 
-            printf("Server Exit...\n"); 
-            break; 
-        } 
-    } 
-} 
-  
-// Driver function 
-int main() 
-{ 
-    int sockfd, connfd, len; 
-    struct sockaddr_in servaddr, cli; 
-  
-    // socket create and verification 
-    sockfd = socket(AF_INET, SOCK_STREAM, 0); 
-    if (sockfd == -1) { 
-        printf("socket creation failed...: %s\n",strerror(errno)); 
-        exit(0); 
-    } 
-    else
-        printf("Socket successfully created..\n"); 
-    bzero(&servaddr, sizeof(servaddr)); 
-  
-    // assign IP, PORT 
-    servaddr.sin_family = AF_INET; 
-    servaddr.sin_addr.s_addr = htonl(INADDR_ANY); 
-    servaddr.sin_port = htons(PORT); 
-  
-    // Binding newly created socket to given IP and verification 
-    if ((bind(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr))) != 0) { 
-        printf("socket bind failed...: %s\n", strerror(errno)); 
-        exit(0); 
-    } 
-    else
-        printf("Socket successfully binded..\n"); 
-  
-    // Now server is ready to listen and verification 
-    if ((listen(sockfd, 5)) != 0) { 
-        printf("Listen failed...: %s\n",strerror(errno)); 
-        exit(0); 
-    } 
-    else
-        printf("Server listening..\n"); 
-    len = sizeof(cli); 
-  
-    // Accept the data packet from client and verification 
-    connfd = accept(sockfd, (struct sockaddr*)&cli, (socklen_t *)&len); 
-    if (connfd < 0) { 
-        printf("server acccept failed...: %s\n",strerror(errno)); 
-        exit(0); 
-    } 
-    else
-        printf("server acccept the client...\n"); 
-  
-    // Function for chatting between client and server 
-    func(connfd); 
-  
-    // After chatting close the socket 
-    close(sockfd); 
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
 
-    return 0;
+#define PORT    8080
+#define MAXLINE 1024
 
+//make the socket global so stub can use it to send msg to client
+int sockfd;
+
+
+//add procedure
+int add (int i, int j){
+	return i + j;
+}
+
+void stub(int result, struct sockaddr_in cliaddr) {
+
+		//construct the message to send back to the client
+		char msg[1024];
+
+		int len = sizeof(cliaddr);
+		sprintf (msg, "%d", result);
+		//send message to the client
+		sendto (sockfd, (const char *) msg, strlen (msg), MSG_CONFIRM, (const struct sockaddr *) &cliaddr, len);
+		printf ("Send %s \n", msg);
+}
+
+
+
+int main (){
+
+	char buffer[MAXLINE];
 	
-} 
+	struct sockaddr_in servaddr, cliaddr;
+
+	// Creating socket file descriptor
+	if ((sockfd = socket (AF_INET, SOCK_DGRAM, 0)) < 0){
+      perror ("socket creation failed");
+      exit (EXIT_FAILURE);
+	}
+
+	memset (&servaddr, 0, sizeof (servaddr));
+	memset (&cliaddr, 0, sizeof (cliaddr));
+
+	// Filling server information
+	servaddr.sin_family = AF_INET; // IPv4
+	servaddr.sin_addr.s_addr = INADDR_ANY;
+	servaddr.sin_port = htons (PORT);
+	// Bind the socket with the server address
+	if (bind (sockfd, (const struct sockaddr *) &servaddr, sizeof (servaddr)) < 0){
+		perror ("bind failed");
+		exit (EXIT_FAILURE);
+	}
+
+	int len = len = sizeof (cliaddr);
+
+
+	//keep waiting for request
+	while (1){
+		//receive a message from the client
+		int n = recvfrom (sockfd, (char *) buffer, MAXLINE, MSG_WAITALL, (struct sockaddr *) &cliaddr, (socklen_t *) & len);
+		
+		//set last byte of buffer to NULL
+		buffer[n] = '\0';
+		printf ("Client : %s\n", buffer);
+
+
+		char buff[1024];
+		//copy buffer to buff just in case we need to use buff again
+		strncpy (buff, buffer, 1024);
+
+		char *words[5];
+
+		int i = 0;
+
+		//get the first token i.e. (add, sub, ...)
+		words[i] = strtok (buff, " \n");
+
+		//get the operand
+		while (words[i] != NULL){
+			i++;
+			words[i] = strtok (NULL, " \n");
+		}
+
+
+		//if the request is add
+        if (strcmp (words[0], "add") == 0){
+			//convert operands to integers
+			int arg1 = atoi (words[1]);
+			int arg2 = atoi (words[2]);
+			
+			//call add() procedure
+			int result = add (arg1, arg2);
+
+			//call stub, passing the result and client address
+
+			stub(result, cliddr);
+      }
+   }
+
+   return 0;
+}
