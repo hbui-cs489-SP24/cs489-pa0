@@ -1,92 +1,82 @@
-# Programming Assignment
+# Programming Assignment 0
 
 ## Summary
-In this assignment, you will implement a client/server RPC protocol. The goal is to use simple TCP to build a communication channel so a client can request services using simple RPCs.
+In this assignment, you will implement a client/server RPC protocol. The goal is to use simple UDP to build a communication channel so a client can request services using simple RPCs.
 
 ## Description
-The following [client.c](client.c) and [server.c](server.c) are a simple implementation of TCP socket connections which are described in the textbook. You can compile and run the client and the server on two different terminal windows (both connected to a Linux server). You should get the following output.
-On the server side
+The following [client.c](client.c) and [server.c](server.c) are a simple implementation of UCP socket connections which are discussed in class. You can compile and run the client and the server on two different terminal windows (both connected to a Linux server). You should get the following output.
+
+On the server side (running on lupin)
 
 ```
-hb117@uxb4:~$ gcc server.c -Wall -o server
-hb117@uxb4:~$ ./server
-Socket successfully created..
-Socket successfully binded..
-Server listening..
-server acccept the client...
-From client: Hello, world!
-     To client : Hi there,
-From client: exit
-     To client : exit
-Server Exit...
+$ make
+cc -Wall -c server.c 
+cc -Wall server.o -o server
+cc -Wall -c client.c 
+cc -Wall client.o -o client
+$ ./server
+Client: add 10 200
+Send 210 
+Client: add 300 400
+Send 700 
+
 ```
 
 On the client side:
 ```
-hb117@uxb4:~$ gcc client.c -Wall -o client
-hb117@uxb4:~$ ./client
-Socket successfully created..
-connected to the server..
-Enter the string : Hello, world!
-From Server : Hi there,
-Enter the string : exit
-From Server : exit
-Client Exit...
+$ ./client 144.126.12.243
+Enter the request: add 10 200
+Sent message add 10 200
+Result: 210
+Enter the request: add 300 400
+Sent message add 300 400
+Result: 700
+Enter the request: sub 20 5
+Enter the request: mul 6 8
+Enter the request: div 12 5
+Enter the request: 
 ```
 
 As you can see, the client and the server establish a socket connection and start exchanging messages using read(), and write() system calls.
 
-The server should understand the following RPC: add, subtract, multiply, and division, and send the results back to the client.
-add and multiple RPC can take more than 2 arguments. subtract and division RPC should only take 2 arguments.
-If the client requests something else, "not supported" will be sent back.
+The system should support the following RPCs: add, sub, mul, and div, and send the results back to the client. All procedures should only take 2 arguments. If the client requests something else, "not supported" should be printed out.
 
-To make things more interesting, the server will not send a raw number back to the client, it will send a string instead. For example:
-negative one instead of -1
-seven instead of 7
-one nine instead of 19
-three zero eight instead of 308
-...
-It is the job of the client to convert the message back to a number.
-Your implementation should work like this:
+After completion, your implementation should work like this:
 On the client side:
 ```
-Socket successfully created..
-connected to the server..
-Enter the request : add 3 4
-From Server : 7
-Enter the request : add 3 2 100
-From Server : 105
-Enter the request : sub 33 14
-From Server : 19
-Enter the request : sub 33 34
-From Server : -1
-Enter the request : mul 3 4
-From Server : 12
-Enter the request : div 30 10
-From Server : 3
-Enter the request : mod 30 10
-From Server : not supported
-Enter the request : exit
-From Server : exit
-Client Exit...
+
+Enter the request: add 3 4
+Result: 7
+Enter the request: add 5 100
+Result: 105
+Enter the request: sub 33 14
+Result: 19
+Enter the request: sub 33 34
+Result: -1
+Enter the request: mul 3 4
+Result: 12
+Enter the request: div 30 10
+Result: 3
+Enter the request: mod 30 10
+not supported
+...
 ```
 On the server side:
 ```
-Socket successfully created..
-Socket successfully binded..
-Server listening..
-server acccept the client...
 From client: add 3 4
-From client: add 3 2 100
+Send 7
+From client: add  5 100
+Send 105
 From client: sub 33 14
+Send 19
 From client: sub 33 34
+Send -1
 From client: mul 3 4
+Send 12
 From client: div 30 10
-From client: mod 30 10
-From client: exit
-Server Exit...
+Send 3
 ```
 
-The server and client will terminate when the client sends the server "exit" message.
-You should use [strtok](http://linux.die.net/man/3/strtok) to tokenize the string that the server gets from the client. Take a look at [this example](input.c) to see how strtok works.
-Additionally, you may want to use [strncmp](http://linux.die.net/man/3/strncmp) to compare 2 strings, use [atoi](http://linux.die.net/man/3/atoi) to convert a string to an integer and use [sprintf](http://linux.die.net/man/3/sprintf) to construct a string to send the result back to the client.
+The client and the server will run until you use Ctrl+C to temrinate them.
+
+You may want to look into the following functions to see how they work: [strncmp](http://linux.die.net/man/3/strncmp) to compare 2 strings, use [atoi](http://linux.die.net/man/3/atoi) to convert a string to an integer, and use [sprintf](http://linux.die.net/man/3/sprintf) to construct a string to send the result back to the client.
