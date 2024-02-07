@@ -75,7 +75,7 @@ int main (){
 		
 		//set last byte of buffer to NULL
 		buffer[n] = '\0';
-		printf ("Client : %s\n", buffer);
+		printf ("Client: %s\n", buffer);
 
 
 		char buff[1024];
