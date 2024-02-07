@@ -15,6 +15,10 @@
 //make IP address of the server a global variable
 char *server_ip;
 
+
+//TODO add code for sub, div, mul procedures
+
+
 //add procedure
 int add (int i, int j) { 
 	int sockfd;
@@ -104,8 +108,9 @@ int main (int argc, char *argv[]){
 			//call add() procedure and print out the result
 			printf ("Result: %d\n", add (arg1, arg2));
 		}
+		//TODO add code for sub, div, mul procedures
+
 	}
 	
-	return 0
+	return 0;
 }
-                                                                                          134,1         Bot

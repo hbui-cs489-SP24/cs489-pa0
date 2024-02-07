@@ -8,11 +8,17 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
+
+//default port, TODO: pick another port (must be the same in client.c)
 #define PORT    8080
 #define MAXLINE 1024
 
 //make the socket global so stub can use it to send msg to client
 int sockfd;
+
+
+
+//TODO add code for sub, div, mul procedures
 
 
 //add procedure
@@ -100,9 +106,12 @@ int main (){
 			int result = add (arg1, arg2);
 
 			//call stub, passing the result and client address
-
-			stub(result, cliddr);
+			stub(result, cliaddr);
       }
+
+		//TODO add code for sub, div, mul procedures
+
+
    }
 
    return 0;
