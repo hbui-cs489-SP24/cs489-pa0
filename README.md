@@ -6,7 +6,7 @@ In this assignment, you will implement a client/server RPC protocol. The goal is
 ## Description
 The following [client.c](client.c) and [server.c](server.c) are a simple implementation of UDP socket connections which are discussed in class. You can compile and run the client and the server on two different terminal windows (both connected to a Linux server). You should get the following output.
 
-On the server side (running on lupin)
+On the server side (running on lupin). 
 
 ```
 $ make
@@ -21,6 +21,8 @@ Client: add 300 400
 Send 700 
 
 ```
+
+You can always on run the server on another machine. You need to use the **ifconfig** command to get the server IP address to use on the client side.
 
 On the client side:
 ```
